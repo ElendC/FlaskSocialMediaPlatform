@@ -39,7 +39,9 @@
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Login</a>
+              <a class="nav-link" href="#" v-if="isLoggedIn" @click="logout"
+                >Logout</a
+              >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Register</a>
@@ -49,8 +51,59 @@
       </div>
     </div>
   </nav>
+  <h1>IsloggedIn: {{ isLoggedIn }}</h1>
+  <div id="app">
+    <div class="form-wrapper">
+      <login-component v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+      <register-component
+        v-if="!isLoggedIn"
+        @register-success="handleRegisterSuccess"
+      />
+    </div>
+    <button v-if="isLoggedIn" @click="logout">Logout</button>
+  </div>
+
   <router-view />
 </template>
+
+<script>
+import LoginComponent from "./components/LoginComp.vue";
+import RegisterComponent from "./components/RegisterComp.vue";
+
+export default {
+  name: "App",
+  components: {
+    LoginComponent,
+    RegisterComponent,
+  },
+  data() {
+    return {
+      isLoggedIn: false,
+    };
+  },
+  methods: {
+    handleLoginSuccess() {
+      this.isLoggedIn = true;
+    },
+    handleRegisterSuccess() {
+      this.isLoggedIn = true;
+    },
+    logout() {
+      this.$http.post("/logout").then(() => {
+        this.isLoggedIn = false;
+      });
+    },
+    checkLoginStatus() {
+      this.$http.get("/status").then((response) => {
+        this.isLoggedIn = response.data.logged_in;
+      });
+    },
+  },
+  created() {
+    this.checkLoginStatus();
+  },
+};
+</script>
 
 <style>
 #app {
