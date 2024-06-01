@@ -14,9 +14,3 @@ The Status route checks if there is a active session, frontend can then be refre
 
 
 
-
-
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>

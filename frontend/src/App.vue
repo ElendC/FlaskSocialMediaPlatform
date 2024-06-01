@@ -43,9 +43,6 @@
                 >Logout</a
               >
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Register</a>
-            </li>
           </ul>
         </div>
       </div>
@@ -54,10 +51,15 @@
   <h1>IsloggedIn: {{ isLoggedIn }}</h1>
   <div id="app">
     <div class="form-wrapper">
-      <login-component v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+      <login-component
+        v-if="!isLoggedIn && showLoggIn"
+        @login-success="handleLoginSuccess"
+        @show-register="showLoggIn = false"
+      />
       <register-component
-        v-if="!isLoggedIn"
+        v-if="!isLoggedIn && !showLoggIn"
         @register-success="handleRegisterSuccess"
+        @show-loggin="showLoggIn = true"
       />
     </div>
     <button v-if="isLoggedIn" @click="logout">Logout</button>
@@ -79,6 +81,7 @@ export default {
   data() {
     return {
       isLoggedIn: false,
+      showLoggIn: true,
     };
   },
   methods: {

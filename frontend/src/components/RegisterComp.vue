@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2>Register</h2>
-    <form @submit.prevent="register">
+    <h2 class="h2Auth">Register</h2>
+    <form @submit.prevent="register" class="formAuth">
       <input v-model="username" placeholder="Username" required />
       <input
         v-model="password"
@@ -9,8 +9,12 @@
         placeholder="Password"
         required
       />
-      <button type="submit">Register</button>
+      <button type="submit" class="buttonAuth">Register</button>
     </form>
+    <h5>
+      Already have an account?
+      <span class="highlightText" @click="showLoggIn">Login here </span>
+    </h5>
   </div>
 </template>
 
@@ -35,6 +39,9 @@ export default {
         .catch(() => {
           alert("Registration failed");
         });
+    },
+    showLoggIn() {
+      this.$emit("show-loggin");
     },
   },
 };
