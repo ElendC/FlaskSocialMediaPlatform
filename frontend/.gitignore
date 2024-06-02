@@ -2,7 +2,6 @@
 node_modules
 /dist
 
-
 # local env files
 .env.local
 .env.*.local
@@ -25,3 +24,4 @@ pnpm-debug.log*
 # DAtabase styff
 __pycache__/
 instance/user.db
+user.db

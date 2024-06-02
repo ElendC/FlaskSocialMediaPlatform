@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User
 
 auth_bp = Blueprint('auth', __name__)
@@ -30,16 +31,22 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({'message': 'Invalid username or password'}), 401
     
-    session['user_id'] = user.id
+    login_user(user)
     return jsonify({'message': 'Login successful'})
 
 @auth_bp.route('/logout', methods=['POST'])
+@login_required
 def logout():
-    session.pop('user_id', None)
+    logout_user()
     return jsonify({'message': 'Logged out'})
 
 @auth_bp.route('/status', methods=['GET'])
 def status():
-    if 'user_id' in session:
+    if current_user.is_authenticated:
         return jsonify({'logged_in': True})
     return jsonify({'logged_in': False})
+
+@auth_bp.route('/current_user', methods=['GET'])
+@login_required
+def current_user_view():
+    return jsonify({'username': current_user.username})

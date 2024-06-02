@@ -1,7 +1,9 @@
 <template>
   <nav class="navbar navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">YourSpace</a>
+      <a class="navbar-brand" href="#"
+        >YourSpace <span v-if="username">Hello {{ username }}</span></a
+      >
       <button
         class="navbar-toggler"
         type="button"
@@ -82,24 +84,57 @@ export default {
     return {
       isLoggedIn: false,
       showLoggIn: true,
+      username: "",
     };
   },
   methods: {
     handleLoginSuccess() {
       this.isLoggedIn = true;
+      this.fetchCurrentUser();
     },
     handleRegisterSuccess() {
       this.isLoggedIn = true;
     },
     logout() {
-      this.$http.post("/logout").then(() => {
-        this.isLoggedIn = false;
-      });
+      fetch("/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+        .then(() => {
+          this.isLoggedIn = false;
+          this.username = ""; // Clear username on logout
+        })
+        .catch((error) => {
+          console.error("Error logging out:", error);
+        });
     },
+
     checkLoginStatus() {
-      this.$http.get("/status").then((response) => {
-        this.isLoggedIn = response.data.logged_in;
-      });
+      fetch("/status", {
+        credentials: "include",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          this.isLoggedIn = data.logged_in;
+          if (this.isLoggedIn) {
+            this.fetchCurrentUser();
+          }
+        })
+        .catch((error) => {
+          console.error("Error checking login status:", error);
+        });
+    },
+    fetchCurrentUser() {
+      fetch("/current_user", {
+        credentials: "include",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          this.username = data.username;
+        })
+        .catch((error) => {
+          console.error("Error fetching current user:", error);
+        });
     },
   },
   created() {
