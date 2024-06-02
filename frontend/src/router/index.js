@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import AboutView from "../views/AboutView.vue";
 import UserView from "../views/UserView.vue";
+import { isAuthenticated } from "../main.js";
 
 const routes = [
   {
@@ -18,12 +19,26 @@ const routes = [
     path: "/user",
     name: "user",
     component: UserView,
+    meta: { requiresAuth: true },
   },
 ];
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
+});
+
+router.beforeEach(async (to) => {
+  if (
+    //Authentication check
+    to.matched.some((record) => record.meta.requiresAuth) &&
+    !(await isAuthenticated()) &&
+    //To avoid inf loop
+    to.name !== "about"
+  ) {
+    //If trying to access without authentication
+    return { name: "about" };
+  }
 });
 
 export default router;

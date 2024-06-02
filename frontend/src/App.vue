@@ -2,8 +2,9 @@
   <nav class="navbar navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="#"
-        >YourSpace <span v-if="username">Hello {{ username }}</span></a
-      >
+        >YourSpace <span v-if="username">Hello {{ username }} </span
+        >{{ isLoggedIn }}</a
+      ><!-- REMOVE {{ isLoggedIn }} -->
       <button
         class="navbar-toggler"
         type="button"
@@ -35,9 +36,9 @@
             <li class="nav-item">
               <a class="nav-link active" aria-current="page" href="#">Home</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#"
-                >YourPage</a
+            <li v-if="isLoggedIn" class="nav-item">
+              <router-link class="nav-link active" :to="{ name: 'user' }"
+                >YourPage</router-link
               >
             </li>
             <li class="nav-item">
@@ -50,7 +51,6 @@
       </div>
     </div>
   </nav>
-  <h1>IsloggedIn: {{ isLoggedIn }}</h1>
   <div id="app">
     <div class="form-wrapper">
       <login-component
@@ -64,7 +64,6 @@
         @show-loggin="showLoggIn = true"
       />
     </div>
-    <button v-if="isLoggedIn" @click="logout">Logout</button>
   </div>
 
   <router-view />

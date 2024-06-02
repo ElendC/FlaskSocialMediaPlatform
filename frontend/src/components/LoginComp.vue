@@ -35,6 +35,7 @@ export default {
         })
         .then(() => {
           this.$emit("login-success");
+          this.$router.push({ name: "user" });
         })
         .catch(() => {
           alert("Login failed");

@@ -35,6 +35,7 @@ export default {
         })
         .then(() => {
           this.$emit("register-success");
+          this.$router.push({ name: "user" });
         })
         .catch(() => {
           alert("Registration failed");

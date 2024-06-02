@@ -14,9 +14,11 @@ def register():
     if User.query.filter_by(username=username).first():
         return jsonify({'message': 'Username already in use'}), 400
     
-    new_user = User(username=username, password=generate_password_hash(password))
-    db.session.add(new_user)
+    user = User(username=username, password=generate_password_hash(password))
+    db.session.add(user)
     db.session.commit()
+
+    login_user(user)
 
     return jsonify({'message': 'Registered successfully'})
 

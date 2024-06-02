@@ -15,7 +15,21 @@ const axiosInstance = axios.create({
 
 const app = createApp(App);
 
-// Make Axios instance available globally
+//Make axios instance available globally
 app.config.globalProperties.$http = axiosInstance;
 
+const isAuthenticated = async () => {
+  try {
+    let response = await fetch("/status", {
+      credentials: "include",
+    });
+    let data = await response.json();
+    return data.logged_in;
+  } catch (error) {
+    console.error("Error checking login stat", error);
+    return false;
+  }
+};
+
+export { isAuthenticated };
 app.use(store).use(router).mount("#app");
