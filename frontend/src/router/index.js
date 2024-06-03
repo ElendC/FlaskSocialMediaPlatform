@@ -3,6 +3,7 @@ import HomeView from "../views/HomeView.vue";
 import AboutView from "../views/AboutView.vue";
 import UserView from "../views/UserView.vue";
 import { isAuthenticated } from "../main.js";
+import UserProfileView from "../views/UserProfileView.vue";
 
 const routes = [
   {
@@ -19,6 +20,12 @@ const routes = [
     path: "/user",
     name: "user",
     component: UserView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/user/:id",
+    name: "userprofile",
+    component: UserProfileView,
     meta: { requiresAuth: true },
   },
 ];

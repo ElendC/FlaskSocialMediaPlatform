@@ -41,6 +41,11 @@
                 >YourPage</router-link
               >
             </li>
+            <li v-if="isLoggedIn" class="nav-item">
+              <router-link class="nav-link active" :to="{ name: 'user' }"
+                >Profile
+              </router-link>
+            </li>
             <li class="nav-item">
               <a class="nav-link" href="#" v-if="isLoggedIn" @click="logout"
                 >Logout</a
@@ -84,6 +89,7 @@ export default {
       isLoggedIn: false,
       showLoggIn: true,
       username: "",
+      userId: null,
     };
   },
   methods: {
@@ -130,6 +136,7 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           this.username = data.username;
+          this.userId = data.id;
         })
         .catch((error) => {
           console.error("Error fetching current user:", error);

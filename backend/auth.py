@@ -52,3 +52,15 @@ def status():
 @login_required
 def current_user_view():
     return jsonify({'username': current_user.username})
+
+@auth_bp.route('/api/user/<int:id>', methods=['GET'])
+@login_required
+def get_user_by_id(id):
+    user = User.query.get(id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'profileImg': user.profileImg
+    })
