@@ -53,10 +53,23 @@ def status():
 def current_user_view():
     return jsonify({'username': current_user.username})
 
+##REMOVE maybe##
 @auth_bp.route('/api/user/<int:id>', methods=['GET'])
 @login_required
 def get_user_by_id(id):
     user = User.query.get(id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'profileImg': user.profileImg
+    })
+
+@auth_bp.route('/api/user/username/<username>', methods=['GET'])
+@login_required
+def get_user_by_username(username):
+    user = User.query.filter_by(username=username).first()
     if not user:
         return jsonify({'message': 'User not found'}), 404
     return jsonify({

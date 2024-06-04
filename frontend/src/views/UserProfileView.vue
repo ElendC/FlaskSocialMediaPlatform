@@ -1,19 +1,16 @@
 <template>
-  <div>
-    <h1>User Profile</h1>
-    <div v-if="user">
-      <p>Username: {{ user.username }}</p>
-      <div v-if="user.profileImg">
-        <img :src="`/store/uploads/${user.profileImg}`" alt="Profile Image" />
-      </div>
-      <form @submit.prevent="uploadPhoto">
-        <input type="file" @change="onFileChange" />
-        <button type="submit">Upload</button>
-      </form>
+  <div v-if="user">
+    <h1>{{ user.username }}</h1>
+    <div v-if="user.profileImg">
+      <img :src="`/store/uploads/${user.profileImg}`" alt="Profile Image" />
     </div>
-    <div v-else>
-      <p>Loading...</p>
-    </div>
+    <form v-if="isCurrentUser" @submit.prevent="uploadPhoto">
+      <input type="file" @change="onFileChange" />
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+  <div v-else>
+    <p>Loading...</p>
   </div>
 </template>
 
@@ -23,16 +20,37 @@ export default {
     return {
       user: null,
       photo: null,
+      currentUser: null, // To store the current user's username
+      isCurrentUser: false, // To track if the current user is viewing their own profile
     };
   },
   async created() {
-    const userId = this.$route.params.id;
+    const username = this.$route.params.username;
+
+    // Fetch current user info
     try {
-      const response = await fetch(`/api/user/${userId}`, {
+      const currentUserResponse = await fetch(`/current_user`, {
+        credentials: "include",
+      });
+      if (currentUserResponse.ok) {
+        const currentUserData = await currentUserResponse.json();
+        this.currentUser = currentUserData.username;
+      } else {
+        console.error("Failed to fetch current user data");
+      }
+    } catch (error) {
+      console.error("Error fetching current user data:", error);
+    }
+
+    // Fetch the user profile data
+    try {
+      const response = await fetch(`/api/user/username/${username}`, {
         credentials: "include",
       });
       if (response.ok) {
         this.user = await response.json();
+        // Check if the current user is viewing their own profile
+        this.isCurrentUser = this.currentUser === username;
       } else {
         console.error("Failed to fetch user data");
       }
@@ -104,5 +122,6 @@ img {
   margin-top: 10px;
   max-width: 150px;
   border-radius: 50%;
+  top: 10%;
 }
 </style>

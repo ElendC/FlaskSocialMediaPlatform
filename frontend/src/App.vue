@@ -21,9 +21,7 @@
         aria-labelledby="offcanvasDarkNavbarLabel"
       >
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">
-            Dark offcanvas
-          </h5>
+          <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Menu</h5>
           <button
             type="button"
             class="btn-close btn-close-white"
@@ -42,7 +40,9 @@
               >
             </li>
             <li v-if="isLoggedIn" class="nav-item">
-              <router-link class="nav-link active" :to="{ name: 'user' }"
+              <router-link
+                class="nav-link active"
+                :to="{ name: 'userprofile', params: { username: username } }"
                 >Profile
               </router-link>
             </li>

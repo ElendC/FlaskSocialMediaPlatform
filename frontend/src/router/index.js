@@ -23,7 +23,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/user/:id",
+    path: "/user/:username",
     name: "userprofile",
     component: UserProfileView,
     meta: { requiresAuth: true },

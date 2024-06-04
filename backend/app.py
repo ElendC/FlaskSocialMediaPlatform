@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, send_from_directory, request, redirect, url_for
 from flask_cors import CORS
-from flask_login import LoginManager, current_user
+from flask_login import LoginManager, current_user, login_required
 from werkzeug.utils import secure_filename
 import os
 
@@ -37,21 +37,33 @@ def index():
     return send_from_directory(app.static_folder, 'index.html')
 
 # Uploading profile picture
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['POST'])
+@login_required
 def upload():
-    if request.method == 'POST' and 'photo' in request.files:
-        file = request.files['photo']
-        if file.filename == '':
-            return 'No selected file'
-        if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            user = User.query.get(current_user.id)
-            user.profileImg = filename
-            db.session.commit()
-            return jsonify({'filename': filename}), 200
+    if 'photo' not in request.files:
+        return jsonify({'message': 'No file part'}), 400
+    file = request.files['photo']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
+    if file:
+        # Use a constant filename based on user ID
+        unique_filename = f"user_{current_user.id}_profile.jpg"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         
-        return jsonify({'message': 'File upload failed'}), 500
+        # Save the new file, overwriting any existing file with the same name
+        file.save(filepath)
+        
+        # Update the user's profile image in the database
+        user = User.query.get(current_user.id)
+        user.profileImg = unique_filename
+        db.session.commit()
+        
+        return jsonify({'filename': unique_filename}), 200
+    
+    return jsonify({'message': 'File upload failed'}), 500
+
+
+
 
 @app.route('/store/uploads/<filename>')
 def uploaded_file(filename):
