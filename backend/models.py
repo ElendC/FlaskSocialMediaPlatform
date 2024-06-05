@@ -11,11 +11,10 @@ class User(db.Model, UserMixin):
 
 class Friend(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    friend1 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    friend2 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user1_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user2_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    status = db.Column(db.String(50), default='pending') 

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="user">
+  <div v-if="user.username">
     <h1>{{ user.username }}</h1>
     <div v-if="user.profileImg">
       <img :src="`/store/uploads/${user.profileImg}`" alt="Profile Image" />
@@ -10,7 +10,10 @@
     </form>
   </div>
   <div id="reqbutton">
-    <send-friend-req :receiver-username="user.username"></send-friend-req>
+    <send-friend-req
+      v-if="!this.isCurrentUser"
+      :receiver-username="user.username"
+    ></send-friend-req>
     <RespondFriendReq v-if="this.isCurrentUser"></RespondFriendReq>
   </div>
 </template>
@@ -26,10 +29,11 @@ export default {
   },
   data() {
     return {
-      user: null,
+      user: { username: "", profileImg: "" },
       photo: null,
       currentUser: null, //The logged in user
       isCurrentUser: false, //Check if userpage belongs to logged in user
+      isFriend: false,
     };
   },
   async created() {
@@ -60,6 +64,7 @@ export default {
         console.log("isCurrentuser: ", this.isCurrentUser);
         console.log("currentUser:: ", this.currentUser);
         console.log("username: ", username);
+        this.checkFriendStatus();
       } else {
         console.error("Failed to fetch user data");
       }
@@ -96,6 +101,18 @@ export default {
       } catch (error) {
         console.error("Error uploading file:", error);
         alert("File upload failed");
+      }
+    },
+    async checkFriendStatus() {
+      try {
+        let response = await fetch("/api/friends", {
+          method: "GET",
+          credentials: "include",
+        });
+        let friendData = await response.json();
+        console.log("friendlist:", friendData);
+      } catch (error) {
+        console.error("Error fetching friend list: ", error);
       }
     },
   },

@@ -92,13 +92,11 @@ def send_friend_request():
         app.logger.info("already sent")
         return jsonify({'message': 'Wait patiently for a response'}), 400
 
-    #If both sent friend request
-    bothRequesting = FriendRequest.query.filter_by(sender_id=receiver.id, receiver_id=current_user.id, status='pending').first()
+    bothRequesting = FriendRequest.query.filter_by(sender_id=receiver.id, receiver_id=current_user.id).first()
     if bothRequesting:
-        friendship1 = Friend(friend1=current_user.id, friend2=receiver.id)
-        friendship2 = Friend(friend1=receiver.id, friend2=current_user.id)
-        db.session.add(friendship1)
-        db.session.add(friendship2)
+        friendship = Friend(user1_id=current_user.id, user2_id=receiver.id)
+        db.session.add(friendship)
+
         # Remove the reciprocal friend request
         db.session.delete(bothRequesting)
         db.session.commit()
@@ -124,10 +122,8 @@ def respond_friend_request():
     if friend_request.receiver_id != current_user.id:
         return jsonify({'message': 'This is not for u, get ur own friends'}), 403
     if action == 'accept':
-        friendship1 = Friend(friend1=current_user.id, friend2=friend_request.sender_id)
-        friendship2 = Friend(friend1=friend_request.sender_id, friend2=current_user.id)
-        db.session.add(friendship1)
-        db.session.add(friendship2)
+        friendship = Friend(user1_id=current_user.id, user2_id=friend_request.sender_id)
+        db.session.add(friendship)
 
         db.session.delete(friend_request)
         db.session.commit()
@@ -143,23 +139,22 @@ def respond_friend_request():
 @auth_bp.route('/api/friends', methods=['GET'])
 @login_required
 def get_friends():
-    friends = Friend.query.filter((Friend.friend1 == current_user.id) | (Friend.friend2 == current_user.id)).all()
+    friends = Friend.query.filter((Friend.user1_id == current_user.id) | (Friend.user2_id == current_user.id)).all()
     friend_list = []
     for friend in friends:
-        if friend.friend1 == current_user.id:
-            friend_user = User.query.get(friend.friend2)
+        if friend.user1_id == current_user.id:
+            friend_user = User.query.get(friend.user2_id)
         else:
-            friend_user = User.query.get(friend.friend1)
+            friend_user = User.query.get(friend.user1_id)
         friend_list.append({'id': friend_user.id, 'username': friend_user.username, 'profileImg': friend_user.profileImg})
     return jsonify(friend_list), 200
 
 @auth_bp.route('/api/friend_requests', methods=['GET'])
 @login_required
 def get_friend_requests():
-    received_requests = FriendRequest.query.filter_by(receiver_id=current_user.id, status='pending').all()
-    sent_requests = FriendRequest.query.filter_by(sender_id=current_user.id, status='pending').all()
+    received_requests = FriendRequest.query.filter_by(receiver_id=current_user.id).all()
+    sent_requests = FriendRequest.query.filter_by(sender_id=current_user.id).all()
     received_requests_list = [{'id': req.id, 'sender_username': User.query.get(req.sender_id).username} for req in received_requests]
     sent_requests_list = [{'id': req.id, 'receiver_username': User.query.get(req.receiver_id).username} for req in sent_requests]
-    app.logger.info(f"Friend requests sent:{sent_requests_list}")
+    app.logger.info(f"Friend requests sent: {sent_requests_list}")
     return jsonify({'received_requests': received_requests_list, 'sent_requests': sent_requests_list}), 200
-

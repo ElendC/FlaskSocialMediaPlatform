@@ -39,13 +39,15 @@
                 >YourPage</router-link
               >
             </li>
-            <li v-if="isLoggedIn" class="nav-item">
+            <li v-if="isLoggedIn && username" class="nav-item">
               <router-link
                 class="nav-link active"
                 :to="{ name: 'userprofile', params: { username: username } }"
-                >Profile
+              >
+                Profile
               </router-link>
             </li>
+
             <li class="nav-item">
               <a class="nav-link" href="#" v-if="isLoggedIn" @click="logout"
                 >Logout</a
