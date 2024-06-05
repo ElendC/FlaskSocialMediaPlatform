@@ -5,7 +5,11 @@
       <ul class="friend-list">
         <li v-for="friend in friends" :key="friend.id" class="friend-item">
           <img
-            :src="`/store/uploads/${friend.profileImg}`"
+            :src="
+              friend.profileImg
+                ? `/store/uploads/${friend.profileImg}`
+                : defaultImg
+            "
             alt="Profile Image"
             class="profile-img"
           />
@@ -24,6 +28,7 @@ export default {
   data() {
     return {
       friends: [],
+      defaultImg: "../store/uploads/default.jpg",
     };
   },
   async created() {
@@ -36,6 +41,7 @@ export default {
           credentials: "include",
         });
         let data = await response.json();
+        // console.log(data);
         this.friends = data;
       } catch (error) {
         console.error("Error fetching friends:", error);

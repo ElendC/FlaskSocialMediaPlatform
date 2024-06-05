@@ -4,9 +4,7 @@
       Befriend This Person
     </button>
     <button v-if="isPending && !accepted">Pending request</button>
-    <h2>Friends :)</h2>
-    <h2>receiver: {{ receiverUsername }}</h2>
-    <h3>{{ this.isPending }}</h3>
+    <h2 v-else>Friends :)</h2>
   </div>
 </template>
 

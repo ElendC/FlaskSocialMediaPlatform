@@ -2,8 +2,14 @@
   <div class="profile-page">
     <header v-if="this.user">
       <h1>{{ user.username }}</h1>
-      <div v-if="user.profileImg">
-        <img :src="`/store/uploads/${user.profileImg}`" alt="Profile Image" />
+      <div>
+        <img
+          :src="
+            user.profileImg ? `/store/uploads/${user.profileImg}` : defaultImg
+          "
+          alt="Profile Image"
+          class="profile-img"
+        />
       </div>
       <form v-if="isCurrentUser" @submit.prevent="uploadPhoto">
         <input type="file" @change="onFileChange" />
@@ -46,6 +52,7 @@ export default {
       isCurrentUser: false, //Check if userpage belongs to logged in user
       isFriend: false,
       showFriendList: false,
+      defaultImg: "../store/uploads/default.jpg",
     };
   },
   async created() {
@@ -200,8 +207,8 @@ li {
 }
 
 .profile-img {
-  width: 40px;
-  height: 40px;
+  width: 160px;
+  height: 170px;
   border-radius: 50%;
   margin-right: 10px;
 }
