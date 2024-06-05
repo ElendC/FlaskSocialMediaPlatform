@@ -14,6 +14,14 @@ class Friend(db.Model):
     user1_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user2_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+    #To check friendship both ways
+    @staticmethod
+    def is_friends(user1_id, user2_id):
+        return Friend.query.filter(
+            ((Friend.user1_id == user1_id) & (Friend.user2_id == user2_id)) |
+            ((Friend.user1_id == user2_id) & (Friend.user2_id == user1_id))
+        ).first() is not None
+
 class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

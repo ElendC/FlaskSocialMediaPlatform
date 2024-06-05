@@ -25,13 +25,13 @@ export default {
     },
   },
   async created() {
+    console.log("Initial receiver: ", this.receiverUsername);
     this.checkFriendRequestStatus();
+    console.log("After checkFriendReq receiver: ", this.receiverUsername);
   },
-
   methods: {
     async SendFriendRequest() {
       try {
-        //Sending receiver name to the backend
         let response = await fetch("/api/friend_request/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -40,7 +40,9 @@ export default {
         });
         let data = await response.json();
         alert(data.message);
-        console.log("receiverUsername: ", this.receiverUsername);
+
+        // Check the status again after sending the request
+        await this.checkFriendRequestStatus();
       } catch (error) {
         console.error("Error sending friend request:", error);
         alert("Error sending friend request");
@@ -48,20 +50,33 @@ export default {
     },
     async checkFriendRequestStatus() {
       try {
-        console.log("Hello this is pending: ", this.isPending);
+        // console.log("Receiver username prop:", this.receiverUsername);
+
         let response = await fetch("/api/friend_requests", {
           method: "GET",
           credentials: "include",
         });
         let data = await response.json();
 
-        console.log("Sent friend requests:", data.sent_requests);
+        // console.log("Data fetched: ", data);
+        // console.log("Sent friend requests fetched:", data.sent_requests);
 
-        //Checks if friend request already sent. Returns true if one match
         this.isPending = data.sent_requests.some(
           (req) => req.receiver_username === this.receiverUsername
         );
-        console.log("Hello this is pending: ", this.isPending);
+        // console.log("Pending status: ", this.isPending);
+
+        let friendsResponse = await fetch("/api/friends", {
+          method: "GET",
+          credentials: "include",
+        });
+        let friendsData = await friendsResponse.json();
+        // console.log("Friends data fetched: ", friendsData);
+
+        this.accepted = friendsData.some(
+          (friend) => friend.username === this.receiverUsername
+        );
+        // console.log("Friend status: ", this.accepted);
       } catch (error) {
         console.error("Error checking friend request status:", error);
       }

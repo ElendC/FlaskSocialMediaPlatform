@@ -72,25 +72,29 @@ def get_user_by_username(username):
     })
 
 
-#FRIEND REQUESTS
+#FRIEND REQUEST STUFF
 @auth_bp.route('/api/friend_request/send', methods=['POST'])
 @login_required
 def send_friend_request():
     data = request.get_json()
     receiver_username = data.get('receiver_username')
-    receiver = User.query.filter_by(username=receiver_username).first() #REMOVE first()
-    
+    receiver = User.query.filter_by(username=receiver_username).first()
+
     if not receiver:
         app.logger.info("No receiver")
         return jsonify({'message': 'User not found'}), 404
-    if receiver.id ==current_user.id:
+    if receiver.id == current_user.id:
         app.logger.info("You can't befriend yourself...")
-        return jsonify({'message': 'Try find some other friends, not yourself'}), 400
-    
+        return jsonify({'message': 'Try to find some other friends, not yourself'}), 400
+
     alreadySent = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=receiver.id).first()
     if alreadySent:
-        app.logger.info("already sent")
+        app.logger.info("Friend request already sent")
         return jsonify({'message': 'Wait patiently for a response'}), 400
+
+    #Check if already friends both ways
+    if Friend.is_friends(current_user.id, receiver.id):
+        return jsonify({'message': 'You are already friends'}), 400
 
     bothRequesting = FriendRequest.query.filter_by(sender_id=receiver.id, receiver_id=current_user.id).first()
     if bothRequesting:
@@ -102,12 +106,14 @@ def send_friend_request():
         db.session.commit()
         return jsonify({'message': 'You are now friends!'}), 200
 
+    #Create a new friend request
     friend_request = FriendRequest(sender_id=current_user.id, receiver_id=receiver.id)
     db.session.add(friend_request)
     db.session.commit()
     app.logger.info(f"sender is: {current_user}")
-    app.logger.info(f"receiver is: {receiver} ")
+    app.logger.info(f"receiver is: {receiver}")
     return jsonify({'message': 'Friend request sent'}), 200
+
 
 @auth_bp.route('/api/friend_request/respond', methods=['POST'])
 @login_required
@@ -120,10 +126,12 @@ def respond_friend_request():
     if not friend_request:
         return jsonify({'message': 'Friend request not found'}), 404
     if friend_request.receiver_id != current_user.id:
-        return jsonify({'message': 'This is not for u, get ur own friends'}), 403
+        return jsonify({'message': 'This is not for you, get your own friends'}), 403
     if action == 'accept':
-        friendship = Friend(user1_id=current_user.id, user2_id=friend_request.sender_id)
-        db.session.add(friendship)
+        #Check if friends
+        if not Friend.is_friends(current_user.id, friend_request.sender_id):
+            friendship = Friend(user1_id=current_user.id, user2_id=friend_request.sender_id)
+            db.session.add(friendship)
 
         db.session.delete(friend_request)
         db.session.commit()
@@ -135,6 +143,7 @@ def respond_friend_request():
         return jsonify({'message': 'Friend request declined'}), 200
     else:
         return jsonify({'message': 'Invalid action'}), 400
+
     
 @auth_bp.route('/api/friends', methods=['GET'])
 @login_required
@@ -149,6 +158,7 @@ def get_friends():
         friend_list.append({'id': friend_user.id, 'username': friend_user.username, 'profileImg': friend_user.profileImg})
     return jsonify(friend_list), 200
 
+
 @auth_bp.route('/api/friend_requests', methods=['GET'])
 @login_required
 def get_friend_requests():
@@ -157,4 +167,5 @@ def get_friend_requests():
     received_requests_list = [{'id': req.id, 'sender_username': User.query.get(req.sender_id).username} for req in received_requests]
     sent_requests_list = [{'id': req.id, 'receiver_username': User.query.get(req.receiver_id).username} for req in sent_requests]
     app.logger.info(f"Friend requests sent: {sent_requests_list}")
+    app.logger.info(f"Friend requests received: {received_requests_list}")
     return jsonify({'received_requests': received_requests_list, 'sent_requests': sent_requests_list}), 200

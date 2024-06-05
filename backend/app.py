@@ -46,14 +46,14 @@ def upload():
     if file.filename == '':
         return jsonify({'message': 'No selected file'}), 400
     if file:
-        # Use a constant filename based on user ID
+        #Forcing name
         unique_filename = f"user_{current_user.id}_profile.jpg"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         
-        # Save the new file, overwriting any existing file with the same name
+        #Overwriting previous, to avoid many uploads
         file.save(filepath)
         
-        # Update the user's profile image in the database
+        # Update profile pic in db
         user = User.query.get(current_user.id)
         user.profileImg = unique_filename
         db.session.commit()

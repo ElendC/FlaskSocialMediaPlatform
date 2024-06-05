@@ -1,43 +1,56 @@
 <template>
-  <div v-if="user.username">
-    <h1>{{ user.username }}</h1>
-    <div v-if="user.profileImg">
-      <img :src="`/store/uploads/${user.profileImg}`" alt="Profile Image" />
-    </div>
-    <form v-if="isCurrentUser" @submit.prevent="uploadPhoto">
-      <input type="file" @change="onFileChange" />
-      <button type="submit">Upload</button>
-    </form>
-  </div>
-  <div id="reqbutton">
-    <send-friend-req
-      v-if="!this.isCurrentUser"
-      :receiver-username="user.username"
-    ></send-friend-req>
-    <RespondFriendReq v-if="this.isCurrentUser"></RespondFriendReq>
+  <div class="profile-page">
+    <header v-if="this.user">
+      <h1>{{ user.username }}</h1>
+      <div v-if="user.profileImg">
+        <img :src="`/store/uploads/${user.profileImg}`" alt="Profile Image" />
+      </div>
+      <form v-if="isCurrentUser" @submit.prevent="uploadPhoto">
+        <input type="file" @change="onFileChange" />
+        <button type="submit">Upload</button>
+      </form>
+    </header>
+
+    <aside class="sidebar">
+      <div id="reqbutton">
+        <send-friend-req
+          v-if="!this.isCurrentUser && this.user"
+          :receiver-username="user.username"
+        ></send-friend-req>
+        <RespondFriendReq v-if="this.isCurrentUser"></RespondFriendReq>
+      </div>
+      <div id="friendlist">
+        <button @click="toggleFriendList">Show friend list</button>
+        <FriendList v-if="showFriendList"></FriendList>
+      </div>
+    </aside>
   </div>
 </template>
 
 <script>
 import SendFriendReq from "../components/SendFriendReq.vue";
 import RespondFriendReq from "../components/RespondFriendReq.vue";
+import FriendList from "../components/FriendList.vue";
 
 export default {
   components: {
     SendFriendReq,
     RespondFriendReq,
+    FriendList,
   },
   data() {
     return {
-      user: { username: "", profileImg: "" },
+      user: null,
       photo: null,
       currentUser: null, //The logged in user
       isCurrentUser: false, //Check if userpage belongs to logged in user
       isFriend: false,
+      showFriendList: false,
     };
   },
   async created() {
     let username = this.$route.params.username;
+    console.log("username: ", username);
     //Fetch currentuser
     try {
       let currentUserResponse = await fetch(`/current_user`, {
@@ -59,11 +72,12 @@ export default {
       });
       if (response.ok) {
         this.user = await response.json();
+        console.log("line 75: ", this.user.username);
         //If current user viewing own profile
         this.isCurrentUser = this.currentUser === username;
-        console.log("isCurrentuser: ", this.isCurrentUser);
-        console.log("currentUser:: ", this.currentUser);
-        console.log("username: ", username);
+        // console.log("isCurrentuser: ", this.isCurrentUser);
+        // console.log("currentUser:: ", this.currentUser);
+        // console.log("username: ", username);
         this.checkFriendStatus();
       } else {
         console.error("Failed to fetch user data");
@@ -115,19 +129,43 @@ export default {
         console.error("Error fetching friend list: ", error);
       }
     },
+    toggleFriendList() {
+      if (!this.showFriendList) {
+        this.showFriendList = true;
+      } else {
+        this.showFriendList = false;
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
-form {
+.profile-page {
   display: flex;
   flex-direction: column;
-  max-width: fit-content;
+  align-items: center;
+  padding: 20px;
 }
 
-input[type="file"] {
-  margin-bottom: 10px;
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.sidebar {
+  position: absolute;
+  right: 20px;
+  top: 110px;
+  max-width: 300px;
+  padding: 10px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#friendlist {
+  margin-top: 20px;
 }
 
 button {
@@ -148,11 +186,23 @@ img {
   margin-top: 10px;
   max-width: 150px;
   border-radius: 50%;
-  top: 10%;
 }
-#reqbutton {
-  position: absolute;
-  top: 35%;
-  left: 80%;
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
 </style>

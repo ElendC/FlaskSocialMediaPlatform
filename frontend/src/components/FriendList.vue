@@ -1,20 +1,20 @@
 <template>
-  <div>
+  <div class="friend-list-container">
     <h1>Your Friends</h1>
     <div v-if="friends.length">
-      <ul>
-        <li v-for="friend in friends" :key="friend.id">
+      <ul class="friend-list">
+        <li v-for="friend in friends" :key="friend.id" class="friend-item">
           <img
             :src="`/store/uploads/${friend.profileImg}`"
             alt="Profile Image"
             class="profile-img"
           />
-          {{ friend.username }}
+          <span>{{ friend.username }}</span>
         </li>
       </ul>
     </div>
     <div v-else>
-      <p>You have no friends yet.</p>
+      <p>You have no friends yet :/</p>
     </div>
   </div>
 </template>
@@ -46,15 +46,32 @@ export default {
 </script>
 
 <style scoped>
-ul {
-  list-style-type: none;
-  padding: 0;
+.friend-list-container {
+  padding: 10px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-li {
-  margin: 10px 0;
+.friend-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friend-item {
   display: flex;
   align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: white;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.friend-item:hover {
+  background-color: #f1f1f1;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .profile-img {
@@ -62,5 +79,10 @@ li {
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
+}
+
+.friend-item span {
+  font-size: 16px;
+  font-weight: 500;
 }
 </style>
