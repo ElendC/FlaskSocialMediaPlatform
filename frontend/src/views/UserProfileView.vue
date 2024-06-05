@@ -9,31 +9,38 @@
       <button type="submit">Upload</button>
     </form>
   </div>
-  <div v-else>
-    <p>Loading...</p>
+  <div id="reqbutton">
+    <send-friend-req :receiver-username="user.username"></send-friend-req>
+    <RespondFriendReq v-if="this.isCurrentUser"></RespondFriendReq>
   </div>
 </template>
 
 <script>
+import SendFriendReq from "../components/SendFriendReq.vue";
+import RespondFriendReq from "../components/RespondFriendReq.vue";
+
 export default {
+  components: {
+    SendFriendReq,
+    RespondFriendReq,
+  },
   data() {
     return {
       user: null,
       photo: null,
-      currentUser: null, // To store the current user's username
-      isCurrentUser: false, // To track if the current user is viewing their own profile
+      currentUser: null, //The logged in user
+      isCurrentUser: false, //Check if userpage belongs to logged in user
     };
   },
   async created() {
-    const username = this.$route.params.username;
-
-    // Fetch current user info
+    let username = this.$route.params.username;
+    //Fetch currentuser
     try {
-      const currentUserResponse = await fetch(`/current_user`, {
+      let currentUserResponse = await fetch(`/current_user`, {
         credentials: "include",
       });
       if (currentUserResponse.ok) {
-        const currentUserData = await currentUserResponse.json();
+        let currentUserData = await currentUserResponse.json();
         this.currentUser = currentUserData.username;
       } else {
         console.error("Failed to fetch current user data");
@@ -41,16 +48,18 @@ export default {
     } catch (error) {
       console.error("Error fetching current user data:", error);
     }
-
-    // Fetch the user profile data
+    //Fetch userprofile data
     try {
-      const response = await fetch(`/api/user/username/${username}`, {
+      let response = await fetch(`/api/user/username/${username}`, {
         credentials: "include",
       });
       if (response.ok) {
         this.user = await response.json();
-        // Check if the current user is viewing their own profile
+        //If current user viewing own profile
         this.isCurrentUser = this.currentUser === username;
+        console.log("isCurrentuser: ", this.isCurrentUser);
+        console.log("currentUser:: ", this.currentUser);
+        console.log("username: ", username);
       } else {
         console.error("Failed to fetch user data");
       }
@@ -67,7 +76,6 @@ export default {
         alert("Please select a file");
         return;
       }
-
       let formData = new FormData();
       formData.append("photo", this.photo);
 
@@ -98,6 +106,7 @@ export default {
 form {
   display: flex;
   flex-direction: column;
+  max-width: fit-content;
 }
 
 input[type="file"] {
@@ -123,5 +132,10 @@ img {
   max-width: 150px;
   border-radius: 50%;
   top: 10%;
+}
+#reqbutton {
+  position: absolute;
+  top: 35%;
+  left: 80%;
 }
 </style>
