@@ -126,6 +126,30 @@ def update_user_info():
         user_info = UserInfo(user_id=user.id)
         db.session.add(user_info)
 
+    work = data.get('work', user_info.work)
+    if not isinstance(work, str) or len(work) > 15:
+        return jsonify({'message': 'Work must be a string and less than 15 characters'}), 400
+
+    education = data.get('education', user_info.education)
+    if not isinstance(education, str) or len(education) > 15:
+        return jsonify({'message': 'Education must be a string and less than 15 characters'}), 400
+
+    hobbies = data.get('hobbies', user_info.hobbies)
+    if not isinstance(hobbies, str) or len(hobbies) > 15:
+        return jsonify({'message': 'Hobbies must be a string and less than 15 characters'}), 400
+
+    age = data.get('age', user_info.age)
+    if not isinstance(age, int) or age < 0 or age > 300:
+        return jsonify({'message': 'Age must be a number between 0 and 300'}), 400
+
+    location = data.get('location', user_info.location)
+    if not isinstance(location, str) or len(location) > 15:
+        return jsonify({'message': 'Location must be a string and less than 15 characters'}), 400
+
+    bio = data.get('bio', user_info.bio)
+    if not isinstance(bio, str) or len(bio) > 100:
+        return jsonify({'message': 'Bio must be a string and less than 100 characters'}), 400
+
     user_info.work = data.get('work', user_info.work)
     user_info.education = data.get('education', user_info.education)
     user_info.hobbies = data.get('hobbies', user_info.hobbies)
