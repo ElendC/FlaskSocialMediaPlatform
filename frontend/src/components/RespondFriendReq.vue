@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h1>Friend Requests</h1>
     <div v-if="friendRequests.length">
+      <p>Friend requests</p>
       <ul>
         <li v-for="request in friendRequests" :key="request.id">
           {{ request.sender_username }}
@@ -13,9 +13,6 @@
           </button>
         </li>
       </ul>
-    </div>
-    <div v-else>
-      <p>No friend requests.</p>
     </div>
   </div>
 </template>

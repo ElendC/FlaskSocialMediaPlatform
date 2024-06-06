@@ -168,3 +168,27 @@ def get_friend_requests():
     app.logger.info(f"Friend requests sent: {sent_requests_list}")
     app.logger.info(f"Friend requests received: {received_requests_list}")
     return jsonify({'received_requests': received_requests_list, 'sent_requests': sent_requests_list}), 200
+
+@auth_bp.route('/api/friends/delete', methods=['DELETE'])
+@login_required
+def delete_friend():
+    data = request.get_json()
+    friend_username = data.get('friend_username')
+    friend = User.query.filter_by(username=friend_username).first()
+    if not friend:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Check if they are friends both ways
+    friendship = Friend.query.filter(
+        ((Friend.user1_id == current_user.id) & (Friend.user2_id == friend.id)) |
+        ((Friend.user1_id == friend.id) & (Friend.user2_id == current_user.id))
+    ).first()
+
+    if not friendship:
+        return jsonify({'message': 'You are not friends'}), 404
+
+    # Delete the friendship
+    db.session.delete(friendship)
+    db.session.commit()
+
+    return jsonify({'message': 'Friend deleted successfully'}), 200

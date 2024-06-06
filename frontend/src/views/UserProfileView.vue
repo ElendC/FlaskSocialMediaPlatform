@@ -3,13 +3,7 @@
     <header v-if="this.user">
       <h1>{{ user.username }}</h1>
       <div>
-        <img
-          :src="
-            user.profileImg ? `/store/uploads/${user.profileImg}` : defaultImg
-          "
-          alt="Profile Image"
-          class="profile-img"
-        />
+        <img :src="profileImgUrl" alt="Profile Image" class="profile-img" />
       </div>
       <form v-if="isCurrentUser" @submit.prevent="uploadPhoto">
         <input type="file" @change="onFileChange" />
@@ -18,18 +12,24 @@
       </form>
     </header>
 
-    <main></main>
+    <main>
+      <user-info
+        v-if="user && currentUser"
+        :username="user.username"
+        :currentUser="currentUser"
+      ></user-info>
+    </main>
 
     <aside class="sidebar">
+      <send-friend-req
+        v-if="!this.isCurrentUser && this.user"
+        :receiver-username="user.username"
+      ></send-friend-req>
       <div id="reqbutton">
-        <send-friend-req
-          v-if="!this.isCurrentUser && this.user"
-          :receiver-username="user.username"
-        ></send-friend-req>
         <RespondFriendReq v-if="this.isCurrentUser"></RespondFriendReq>
       </div>
       <div id="friendlist">
-        <button @click="toggleFriendList">Show friend list</button>
+        <button @click="toggleFriendList">Friend list</button>
         <FriendList v-if="showFriendList"></FriendList>
       </div>
     </aside>
@@ -40,23 +40,26 @@
 import SendFriendReq from "../components/SendFriendReq.vue";
 import RespondFriendReq from "../components/RespondFriendReq.vue";
 import FriendList from "../components/FriendList.vue";
+import UserInfo from "../components/UserInfo.vue";
 
 export default {
   components: {
     SendFriendReq,
     RespondFriendReq,
     FriendList,
+    UserInfo,
   },
   data() {
     return {
       user: null,
       photo: null,
-      currentUser: null, //The logged in user
-      isCurrentUser: false, //Check if userpage belongs to logged in user
+      currentUser: null, //The loggedin user
+      isCurrentUser: false, //Check if loggedin user owns page
       isFriend: false,
       showFriendList: false,
       defaultImg: "../store/uploads/default.jpg",
       errorMessage: "",
+      profileImgUrl: "", //URL for the profile image
     };
   },
   async created() {
@@ -67,7 +70,7 @@ export default {
   },
   methods: {
     async fetchUserData() {
-      //Fetch currentuser
+      // Fetch current user
       let username = this.$route.params.username;
       try {
         let currentUserResponse = await fetch(`/current_user`, {
@@ -76,31 +79,39 @@ export default {
         if (currentUserResponse.ok) {
           let currentUserData = await currentUserResponse.json();
           this.currentUser = currentUserData.username;
+          console.log("Current user is: ", this.currentUser);
         } else {
           console.error("Failed to fetch current user data");
         }
       } catch (error) {
         console.error("Error fetching current user data:", error);
       }
-      //Fetch userprofile data
+
+      // Fetch user profile data
       try {
         let response = await fetch(`/api/user/username/${username}`, {
           credentials: "include",
         });
         if (response.ok) {
           this.user = await response.json();
-          console.log("line 75: ", this.user.username);
-          //If current user viewing own profile
           this.isCurrentUser = this.currentUser === username;
-          // console.log("isCurrentuser: ", this.isCurrentUser);
-          // console.log("currentUser:: ", this.currentUser);
-          // console.log("username: ", username);
+          this.updateProfileImgUrl(); // Update the profile image URL
           this.checkFriendStatus();
         } else {
           console.error("Failed to fetch user data");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+      }
+    },
+    updateProfileImgUrl() {
+      //If user has profile img, and uploads a new one. So no need refresh
+      if (this.user && this.user.profileImg) {
+        this.profileImgUrl = `/store/uploads/${
+          this.user.profileImg
+        }?t=${new Date().getTime()}`;
+      } else {
+        this.profileImgUrl = this.defaultImg;
       }
     },
     onFileChange(event) {
@@ -111,26 +122,22 @@ export default {
         this.errorMessage = "Please select a file";
         return;
       }
-      //VALIDATION START: comment out for backend validation testing
+
       let validTypes = ["image/jpeg", "image/png"];
       let maxSize = 2097152;
       if (!validTypes.includes(this.photo.type)) {
         this.errorMessage = "Invalid file type. only jpeg or png.";
-        console.log("INVALID TYPE");
         return;
       }
       if (this.photo.size > maxSize) {
-        this.errorMessage = "Img is to large, max 2MB";
-        console.log("INVALID SIZE");
+        this.errorMessage = "Img is too large, max 2MB";
         return;
       }
-      //VALIDATION END: comment out for backend validation testing
 
       let formData = new FormData();
       formData.append("photo", this.photo);
 
       try {
-        console.log("TRYING TO FETCH");
         let response = await fetch("/upload", {
           method: "POST",
           body: formData,
@@ -138,12 +145,9 @@ export default {
         });
 
         if (response.ok) {
-          console.log("RESPONSE IS OK");
-          let data = await response.json();
-          this.user.profileImg = data.filename;
+          await this.fetchUserData();
           this.errorMessage = "";
         } else {
-          console.log("RESPOONSE FAILED");
           this.errorMessage = "Failed to upload image";
         }
       } catch (error) {
@@ -160,15 +164,11 @@ export default {
         let friendData = await response.json();
         console.log("friendlist:", friendData);
       } catch (error) {
-        console.error("Error fetching friend list: ", error);
+        console.error("Error fetching friend list:", error);
       }
     },
     toggleFriendList() {
-      if (!this.showFriendList) {
-        this.showFriendList = true;
-      } else {
-        this.showFriendList = false;
-      }
+      this.showFriendList = !this.showFriendList;
     },
   },
 };
@@ -187,8 +187,8 @@ header {
 }
 .sidebar {
   position: absolute;
-  right: 20px;
-  top: 110px;
+  left: 0px;
+  top: 60px;
   max-width: 300px;
   padding: 10px;
   background-color: #f8f8f8;

@@ -4,9 +4,9 @@ import re
 ImgTypes = {'image/jpeg', 'image/png'}
 MaxProfImgSiz = 2097152
 
-MinLenUsrname = 2
-MaxLenUsrname = 6
-MinLenPass = 2
+MinLenUsrname = 1
+MaxLenUsrname = 10
+MinLenPass = 1
 MaxLenPass = 10
 
 def allowed_file(filename):

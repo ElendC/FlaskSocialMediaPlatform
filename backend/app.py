@@ -4,10 +4,10 @@ from flask_login import LoginManager, current_user, login_required
 from werkzeug.utils import secure_filename #REMOVE
 import os
 from functions import validate_file
-from flask import current_app as app #REMOVE
+from flask import current_app as app
 
 from auth import auth_bp
-from models import db, User
+from models import db, User, UserInfo
 
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='') # Creates Flask Instance. Arguments is where static compiled frontend files are.
 app.config['SECRET_KEY'] = 'someSecret'
@@ -76,7 +76,66 @@ def upload():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     
+@app.route('/api/allusers', methods=['GET'])
+@login_required
+def get_all_users():
+    users = User.query.all()
+    user_list = [{'username': user.username, 'profileImg': user.profileImg} for user in users]
+    return jsonify(user_list), 200
 
+
+@app.route('/api/user_info/<username>', methods=['GET'])
+@login_required
+def get_user_info(username):
+    if not username:
+        app.logger.info("Username not received on backend")
+        return jsonify({'message': 'No username provided'}), 400
+    
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        app.logger.info("No user found Oo")
+        return jsonify({'message': 'No user found Oo'}), 404
+
+    user_info = UserInfo.query.filter_by(user_id=user.id).first()
+    if not user_info:
+        app.logger.info("No user INFO found !")
+        return jsonify({'message': 'No user infor oO'}), 404
+
+    return jsonify({
+        'username': user.username,
+        'work': user_info.work,
+        'education': user_info.education,
+        'hobbies': user_info.hobbies,
+        'age': user_info.age,
+        'location': user_info.location,
+        'bio': user_info.bio
+    }), 200
+
+@app.route('/api/user_info', methods=['POST'])
+@login_required
+def update_user_info():
+    data = request.get_json()
+    username = data.get('username')
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    user_info = UserInfo.query.filter_by(user_id=user.id).first()
+    if not user_info:
+        user_info = UserInfo(user_id=user.id)
+        db.session.add(user_info)
+
+    user_info.work = data.get('work', user_info.work)
+    user_info.education = data.get('education', user_info.education)
+    user_info.hobbies = data.get('hobbies', user_info.hobbies)
+    user_info.age = data.get('age', user_info.age)
+    user_info.location = data.get('location', user_info.location)
+    user_info.bio = data.get('bio', user_info.bio)
+
+    db.session.commit()
+
+    return jsonify({'message': 'User info updated successfully'}), 200
 
 if __name__ == '__main__':
     with app.app_context():
