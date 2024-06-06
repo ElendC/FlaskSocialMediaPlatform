@@ -4,6 +4,12 @@ body {
     padding: 10px;
     box-sizing: border-box;
   }
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
 
 /* Login/Register Form */
 .form-wrapper {
@@ -31,7 +37,6 @@ body {
   flex-direction: column;
   align-items: stretch;
   }
-  
 .buttonAuth {
   margin-top: 10px;
   padding: 10px;
@@ -45,7 +50,6 @@ body {
 .buttonAuth:hover {
     background-color: #369e6f;
   }
-  
 .h2Auth {
   margin-bottom: 15px;
   font-family: 'Roboto', sans-serif;
@@ -54,7 +58,6 @@ body {
   text-align: center;
   font-weight: 900;
 }
-
 input {
   padding: 10px;
   margin: 10px 0;
@@ -62,18 +65,30 @@ input {
   border-radius: 4px;
   box-sizing: border-box;
 }
-
 label {
   font-family: 'Roboto', sans-serif;
   color: #555555;
   margin-bottom: 5px;
 }
-
 .highlightText{
     color: blue;
     cursor: pointer;
-    
+   
 }
 .highlightText:hover{
     color: lightskyblue;
+}
+/* Media query for small screens */
+@media (max-width: 1250px) {
+  .form-wrapper {
+    width: 100%;
+    margin-top: 20px;
+    top: 59%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-wrapper > * {
+    width: 100%;
+  }
 }

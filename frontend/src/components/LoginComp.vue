@@ -10,6 +10,7 @@
         required
       />
       <button type="submit" class="buttonAuth">Login</button>
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </form>
     <h5>
       Don't have an account?
@@ -24,22 +25,33 @@ export default {
     return {
       username: "",
       password: "",
+      errorMessage: "",
     };
   },
   methods: {
-    login() {
-      this.$http
-        .post("/login", {
+    async login() {
+      try {
+        let response = await this.$http.post("/login", {
           username: this.username,
           password: this.password,
-        })
-        .then(() => {
+        });
+        if (response.status === 200) {
           this.$emit("login-success");
           this.$router.push({ name: "user" });
-        })
-        .catch(() => {
-          alert("Login failed");
-        });
+        }
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          this.errorMessage = error.response.data.message;
+        } else {
+          console.error("Login failed", error);
+          this.errorMessage = "Login failed";
+        }
+      }
     },
     showRegister() {
       this.$emit("show-register");

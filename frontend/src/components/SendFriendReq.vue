@@ -49,13 +49,11 @@ export default {
     async checkFriendRequestStatus() {
       try {
         // console.log("Receiver username prop:", this.receiverUsername);
-
         let response = await fetch("/api/friend_requests", {
           method: "GET",
           credentials: "include",
         });
         let data = await response.json();
-
         // console.log("Data fetched: ", data);
         // console.log("Sent friend requests fetched:", data.sent_requests);
 

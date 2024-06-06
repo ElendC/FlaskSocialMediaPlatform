@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, FriendRequest, Friend
-
+from functions import registerCheck
 from flask import current_app as app #For debug/loging: app.logger.info(f"Message: {variable}")
 
 auth_bp = Blueprint('auth', __name__)
@@ -12,6 +12,11 @@ def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+
+    error = registerCheck(username, password)
+    if error:
+        app.logger.info(error)
+        return jsonify({"message": error}), 400
 
     if User.query.filter_by(username=username).first():
         return jsonify({'message': 'Username already in use'}), 400
@@ -65,7 +70,6 @@ def get_user_by_username(username):
         'username': user.username,
         'profileImg': user.profileImg
     })
-
 
 #FRIEND REQUEST STUFF
 @auth_bp.route('/api/friend_request/send', methods=['POST'])

@@ -4,16 +4,21 @@
     <div v-if="friends.length">
       <ul class="friend-list">
         <li v-for="friend in friends" :key="friend.id" class="friend-item">
-          <img
-            :src="
-              friend.profileImg
-                ? `/store/uploads/${friend.profileImg}`
-                : defaultImg
-            "
-            alt="Profile Image"
-            class="profile-img"
-          />
-          <span>{{ friend.username }}</span>
+          <router-link
+            :to="{ name: 'userprofile', params: { username: friend.username } }"
+            class="nav-link active"
+          >
+            <img
+              :src="
+                friend.profileImg
+                  ? `/store/uploads/${friend.profileImg}`
+                  : defaultImg
+              "
+              alt="Profile Image"
+              class="profile-img"
+            />
+            <span>{{ friend.username }}</span>
+          </router-link>
         </li>
       </ul>
     </div>
@@ -33,6 +38,9 @@ export default {
   },
   async created() {
     await this.fetchFriends();
+  },
+  watch: {
+    "$route.params.username": "fetchFriends",
   },
   methods: {
     async fetchFriends() {

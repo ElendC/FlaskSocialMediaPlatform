@@ -3,6 +3,8 @@ from flask_cors import CORS
 from flask_login import LoginManager, current_user, login_required
 from werkzeug.utils import secure_filename #REMOVE
 import os
+from functions import validate_file
+from flask import current_app as app #REMOVE
 
 from auth import auth_bp
 from models import db, User
@@ -41,10 +43,17 @@ def index():
 @login_required
 def upload():
     if 'photo' not in request.files:
+        app.logger("no file part")
         return jsonify({'message': 'No file part'}), 400
     file = request.files['photo']
     if file.filename == '':
         return jsonify({'message': 'No selected file'}), 400
+
+    error = validate_file(file)
+    if error:
+        app.logger.error(f"File validation error: {error}")
+        return jsonify({"message": error}), 400
+
     if file:
         #Forcing name
         unique_filename = f"user_{current_user.id}_profile.jpg"
@@ -57,7 +66,8 @@ def upload():
         user = User.query.get(current_user.id)
         user.profileImg = unique_filename
         db.session.commit()
-        
+
+        app.logger.info(f"File uploaded successfully: {unique_filename}")
         return jsonify({'filename': unique_filename}), 200
     
     return jsonify({'message': 'File upload failed'}), 500
@@ -66,6 +76,7 @@ def upload():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     
+
 
 if __name__ == '__main__':
     with app.app_context():

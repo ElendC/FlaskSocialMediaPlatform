@@ -13,9 +13,11 @@
       </div>
       <form v-if="isCurrentUser" @submit.prevent="uploadPhoto">
         <input type="file" @change="onFileChange" />
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         <button type="submit">Upload</button>
       </form>
     </header>
+
     <main></main>
 
     <aside class="sidebar">
@@ -54,59 +56,81 @@ export default {
       isFriend: false,
       showFriendList: false,
       defaultImg: "../store/uploads/default.jpg",
+      errorMessage: "",
     };
   },
   async created() {
-    let username = this.$route.params.username;
-    console.log("username: ", username);
-    //Fetch currentuser
-    try {
-      let currentUserResponse = await fetch(`/current_user`, {
-        credentials: "include",
-      });
-      if (currentUserResponse.ok) {
-        let currentUserData = await currentUserResponse.json();
-        this.currentUser = currentUserData.username;
-      } else {
-        console.error("Failed to fetch current user data");
-      }
-    } catch (error) {
-      console.error("Error fetching current user data:", error);
-    }
-    //Fetch userprofile data
-    try {
-      let response = await fetch(`/api/user/username/${username}`, {
-        credentials: "include",
-      });
-      if (response.ok) {
-        this.user = await response.json();
-        console.log("line 75: ", this.user.username);
-        //If current user viewing own profile
-        this.isCurrentUser = this.currentUser === username;
-        // console.log("isCurrentuser: ", this.isCurrentUser);
-        // console.log("currentUser:: ", this.currentUser);
-        // console.log("username: ", username);
-        this.checkFriendStatus();
-      } else {
-        console.error("Failed to fetch user data");
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
+    await this.fetchUserData();
+  },
+  watch: {
+    "$route.params.username": "fetchUserData",
   },
   methods: {
+    async fetchUserData() {
+      //Fetch currentuser
+      let username = this.$route.params.username;
+      try {
+        let currentUserResponse = await fetch(`/current_user`, {
+          credentials: "include",
+        });
+        if (currentUserResponse.ok) {
+          let currentUserData = await currentUserResponse.json();
+          this.currentUser = currentUserData.username;
+        } else {
+          console.error("Failed to fetch current user data");
+        }
+      } catch (error) {
+        console.error("Error fetching current user data:", error);
+      }
+      //Fetch userprofile data
+      try {
+        let response = await fetch(`/api/user/username/${username}`, {
+          credentials: "include",
+        });
+        if (response.ok) {
+          this.user = await response.json();
+          console.log("line 75: ", this.user.username);
+          //If current user viewing own profile
+          this.isCurrentUser = this.currentUser === username;
+          // console.log("isCurrentuser: ", this.isCurrentUser);
+          // console.log("currentUser:: ", this.currentUser);
+          // console.log("username: ", username);
+          this.checkFriendStatus();
+        } else {
+          console.error("Failed to fetch user data");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    },
     onFileChange(event) {
       this.photo = event.target.files[0];
     },
     async uploadPhoto() {
       if (!this.photo) {
-        alert("Please select a file");
+        this.errorMessage = "Please select a file";
         return;
       }
+      //VALIDATION START: comment out for backend validation testing
+      let validTypes = ["image/jpeg", "image/png"];
+      let maxSize = 2097152;
+      if (!validTypes.includes(this.photo.type)) {
+        this.errorMessage = "Invalid file type. only jpeg or png.";
+        console.log("INVALID TYPE");
+        return;
+      }
+      if (this.photo.size > maxSize) {
+        this.errorMessage = "Img is to large, max 2MB";
+        console.log("INVALID SIZE");
+        return;
+      }
+      //VALIDATION END: comment out for backend validation testing
+
       let formData = new FormData();
       formData.append("photo", this.photo);
 
       try {
+        console.log("TRYING TO FETCH");
         let response = await fetch("/upload", {
           method: "POST",
           body: formData,
@@ -114,15 +138,17 @@ export default {
         });
 
         if (response.ok) {
+          console.log("RESPONSE IS OK");
           let data = await response.json();
           this.user.profileImg = data.filename;
-          alert("File uploaded successfully");
+          this.errorMessage = "";
         } else {
-          alert("File upload failed");
+          console.log("RESPOONSE FAILED");
+          this.errorMessage = "Failed to upload image";
         }
       } catch (error) {
         console.error("Error uploading file:", error);
-        alert("File upload failed");
+        this.errorMessage = "File upload failed";
       }
     },
     async checkFriendStatus() {
@@ -203,5 +229,10 @@ li {
   height: 170px;
   border-radius: 50%;
   margin-right: 10px;
+}
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
 }
 </style>
