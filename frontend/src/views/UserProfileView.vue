@@ -16,6 +16,7 @@
         <button type="submit">Upload</button>
       </form>
     </header>
+    <main></main>
 
     <aside class="sidebar">
       <div id="reqbutton">
@@ -154,12 +155,10 @@ export default {
   align-items: center;
   padding: 20px;
 }
-
 header {
   text-align: center;
   margin-bottom: 20px;
 }
-
 .sidebar {
   position: absolute;
   right: 20px;
@@ -170,11 +169,9 @@ header {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
 #friendlist {
   margin-top: 20px;
 }
-
 button {
   width: 100px;
   padding: 5px;
@@ -184,28 +181,23 @@ button {
   border-radius: 3px;
   cursor: pointer;
 }
-
 button:hover {
   background-color: #45a049;
 }
-
 img {
   margin-top: 10px;
   max-width: 150px;
   border-radius: 50%;
 }
-
 ul {
   list-style-type: none;
   padding: 0;
 }
-
 li {
   margin: 10px 0;
   display: flex;
   align-items: center;
 }
-
 .profile-img {
   width: 160px;
   height: 170px;

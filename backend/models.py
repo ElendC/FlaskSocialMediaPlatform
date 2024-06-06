@@ -26,3 +26,12 @@ class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class UserInfo(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True, nullable=False)
+    work = db.Column(db.String(50), nullable=True)
+    education = db.Column(db.String(50), nullable=True)
+    hobbies = db.Column(db.String(200), nullable=True)
+    age = db.Column(db.Integer, nullable=True)
+    location = db.Column(db.String(100), nullable=True)
+    bio = db.Column(db.Text, nullable=True)

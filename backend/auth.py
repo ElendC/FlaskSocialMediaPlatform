@@ -19,7 +19,6 @@ def register():
     user = User(username=username, password=generate_password_hash(password))
     db.session.add(user)
     db.session.commit()
-
     login_user(user)
 
     return jsonify({'message': 'Registered successfully'})
@@ -29,16 +28,12 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-
     user = User.query.filter_by(username=username).first()
-
     if not user or not check_password_hash(user.password, password):
         return jsonify({'message': 'Invalid username or password'}), 401
     
     login_user(user)
     app.logger.info(f"Logged in as user: {user}")
-
-
     return jsonify({'message': 'Login successful'})
 
 @auth_bp.route('/logout', methods=['POST'])

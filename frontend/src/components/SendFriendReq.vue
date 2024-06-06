@@ -3,7 +3,7 @@
     <button v-if="!isPending && !accepted" @click="SendFriendRequest">
       Befriend This Person
     </button>
-    <button v-if="isPending && !accepted">Pending request</button>
+    <button v-else-if="isPending && !accepted">Pending request</button>
     <h2 v-else>Friends :)</h2>
   </div>
 </template>
