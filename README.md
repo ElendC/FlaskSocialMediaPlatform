@@ -14,6 +14,11 @@
 3. Session is stored in a session cookie on register/login (Line 22 & 35 ) and removed at logout (Line 42).
 4. Errors are displayed for all register and login errors.
 
+## UserView
+1. Search for users by education.
+2. search parameter is stored in session storage. It will still be there if browsing within the page.
+3. Sort toggle by age is possible
+
 ## UserProfileView
 ### Uploading Image
 1. After logging in, visit your user profile  (from nav bar).

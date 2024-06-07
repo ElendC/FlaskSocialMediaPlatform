@@ -84,6 +84,41 @@ def get_all_users():
     return jsonify(user_list), 200
 
 
+# @app.route('/api/user_info/<username>', methods=['GET'])
+# @login_required
+# def get_user_info(username):
+#     if not username:
+#         app.logger.info("Username not received on backend")
+#         return jsonify({'message': 'No username provided'}), 400
+    
+#     user = User.query.filter_by(username=username).first()
+#     if not user:
+#         app.logger.info("No user found Oo")
+#         return jsonify({'message': 'No user found Oo'}), 404
+
+#     user_info = UserInfo.query.filter_by(user_id=user.id).first()
+#     if not user_info:
+#         app.logger.info("No user INFO found !")
+#         return jsonify({
+#         'username': user.username,
+#         'work': 'None',
+#         'education': 'None',
+#         'hobbies': 'None',
+#         'age': 1,
+#         'location': 'None',
+#         'bio': 'None'
+#         }), 200
+
+#     return jsonify({
+#         'username': user.username,
+#         'work': user_info.work,
+#         'education': user_info.education,
+#         'hobbies': user_info.hobbies,
+#         'age': user_info.age,
+#         'location': user_info.location,
+#         'bio': user_info.bio
+#     }), 200
+
 @app.route('/api/user_info/<username>', methods=['GET'])
 @login_required
 def get_user_info(username):
@@ -97,27 +132,18 @@ def get_user_info(username):
         return jsonify({'message': 'No user found Oo'}), 404
 
     user_info = UserInfo.query.filter_by(user_id=user.id).first()
-    if not user_info:
-        app.logger.info("No user INFO found !")
-        return jsonify({
-        'username': user.username,
-        'work': '',
-        'education': 'None',
-        'hobbies': '',
-        'age': 1,
-        'location': '',
-        'bio': ''
-        }), 200
 
     return jsonify({
         'username': user.username,
-        'work': user_info.work,
-        'education': user_info.education,
-        'hobbies': user_info.hobbies,
-        'age': user_info.age,
-        'location': user_info.location,
-        'bio': user_info.bio
+        'work': user_info.work if user_info else "",
+        'education': user_info.education if user_info else "",
+        'hobbies': user_info.hobbies if user_info else "",
+        'age': user_info.age if user_info else "",
+        'location': user_info.location if user_info else "",
+        'bio': user_info.bio if user_info else "",
+        'profileImg': user.profileImg if user_info else None
     }), 200
+
 
 @app.route('/api/user_info', methods=['POST'])
 @login_required
@@ -168,6 +194,22 @@ def update_user_info():
     db.session.commit()
 
     return jsonify({'message': 'User info updated successfully'}), 200
+
+@app.route('/api/users_by_education', methods=['POST'])
+@login_required
+def get_users_by_education():
+    data = request.get_json()
+    education = data.get('education')
+
+    if not education:
+        return jsonify({'message': 'No education provided'}), 400
+
+    users = User.query.join(UserInfo).filter(UserInfo.education.ilike(f"%{education}%")).all()
+    if not users:
+        return jsonify([]), 200
+
+    return jsonify([{'username': user.username, 'profileImg': user.profileImg} for user in users]), 200
+
 
 if __name__ == '__main__':
     with app.app_context():
