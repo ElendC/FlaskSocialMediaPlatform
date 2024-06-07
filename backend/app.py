@@ -99,7 +99,15 @@ def get_user_info(username):
     user_info = UserInfo.query.filter_by(user_id=user.id).first()
     if not user_info:
         app.logger.info("No user INFO found !")
-        return jsonify({'message': 'No user infor oO'}), 404
+        return jsonify({
+        'username': user.username,
+        'work': '',
+        'education': 'None',
+        'hobbies': '',
+        'age': 1,
+        'location': '',
+        'bio': ''
+        }), 200
 
     return jsonify({
         'username': user.username,

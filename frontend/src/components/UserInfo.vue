@@ -55,11 +55,10 @@ export default {
   data() {
     return {
       userInfo: {
-        username: "Loading...",
-        work: "Loading...",
-        education: "Loading...",
-        hobbies: "Loading...",
-        age: "Loading...",
+        work: "",
+        education: "",
+        hobbies: "",
+        age: 0,
         location: "Loading...",
         bio: "Loading...",
       },
@@ -110,8 +109,12 @@ export default {
       this.editMode = !this.editMode;
     },
     validateInputs() {
-      if (this.userInfo.age < 0 || this.userInfo.age > 300) {
-        this.errorMessage = "Age must be between 0 and 300";
+      if (
+        this.userInfo.age < 0 ||
+        this.userInfo.age > 300 ||
+        this.userInfo.age == ""
+      ) {
+        this.errorMessage = "Age must be between 1 and 300";
         return false;
       }
       if (
